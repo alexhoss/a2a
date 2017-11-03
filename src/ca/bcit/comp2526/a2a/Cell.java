@@ -5,15 +5,18 @@ import java.awt.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+/**
+ * Class to represent a cell on the frame or world.
+ */
 public class Cell extends JPanel {
+    private static final  int EIGHTY = 80;
+    private static final int FIFTY = 50;
+    private static final int HUNDRED = 100;
     private Point p;
-    World world;
-    Type type;
-    Life life;
+    private World world;
+    private Type type;
+    private Life life;
 
-
-    public static ArrayList plants = new ArrayList();
-    private static ArrayList herbivores = new ArrayList();
 
     private static HashMap Worldcells = new HashMap<Point, Cell>();
 
@@ -23,16 +26,18 @@ public class Cell extends JPanel {
         setBackground(Color.white);
     }
 
+    /**
+     * Initialize the cells and set up herbivore or plant or none.
+     */
     public void init() {
         this.setBorder(BorderFactory.createLineBorder(Color.BLACK));
-        int rand = RandomGenerator.nextNumber(100);
+        int rand = RandomGenerator.nextNumber(HUNDRED);
 
-        if (rand >= 80) {
+        if (rand >= EIGHTY) {
             this.life = new Herbivore(this);
 
 
-
-        } else if (rand >= 50) {
+        } else if (rand >= FIFTY) {
             this.life = new Plant(this);
 
 
@@ -42,23 +47,19 @@ public class Cell extends JPanel {
 
     }
 
-    @Override
-    public String toString() {
-        return "Cell{" +
-                "p=" + p +
-                ", life=" + life +
-                '}';
-    }
-
-
+    /**
+     * Return location of the cell.
+     *
+     * @return p the location of the cell
+     */
     public Point getLocation() {
         return p;
     }
 
-    ;
-
-    //TODO: Return adjacent cells(3 f corner, 5 f sides, else 8)
-
+    /**
+     * Returns the adjacent cells of this.
+     * @return cells neighbouring this
+     */
     public ArrayList<Cell> getAdjacentCells() {
         ArrayList<Cell> cells = new ArrayList<>();
         int x = this.getLocation().x;
@@ -67,7 +68,9 @@ public class Cell extends JPanel {
         for (int i = x - 1; i <= x + 1; i++) {
             for (int j = y - 1; j <= y + 1; j++) {
                 Point loc = new Point(i, j);
-                if (Worldcells.get(loc) == null) continue;
+                if (Worldcells.get(loc) == null) {
+                    continue;
+                }
                 cells.add((Cell) Worldcells.get(loc));
             }
             cells.remove(this);
@@ -76,33 +79,53 @@ public class Cell extends JPanel {
 
     }
 
-    public void setLife(String type) {
-        if (type.equals("p")) life = new Plant(this);
-        else life = new Herbivore(this);
+    /**
+     * Create a new plant in the cell.
+     */
+    public void setPlant() {
+        life = new Plant(this);
     }
 
-    ;
+    /**
+     * Set the cells life to a lifeform.
+     *
+     * @param lifeform the lifeform to belong to cell
+     */
+    public void setLife(Life lifeform) {
+        this.life = lifeform;
+    }
 
+    /**
+     * Returns the life form in the cell. Can be null
+     *
+     * @return the life form in the cell
+     */
     public Life getLife() {
         return life;
     }
 
-
+    /**
+     * Set the life in the cell to be null.
+     */
     public void removeLife() {
-        life = null;
+
+        this.life = null;
 
 
     }
 
+    /**
+     * Manages repainting the cells the correct colours.
+     *
+     * @param g graphics
+     */
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
-        if(this.getLife() instanceof Plant){
+        if (this.getLife() instanceof Plant) {
             this.setBackground(Color.GREEN);
-        }
-        else if (this.getLife() instanceof Herbivore){
+        } else if (this.getLife() instanceof Herbivore) {
             this.setBackground(Color.YELLOW);
-        }
-        else this.setBackground(Color.white);
+        } else this.setBackground(Color.white);
 
     }
 }

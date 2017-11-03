@@ -3,44 +3,31 @@ package ca.bcit.comp2526.a2a;
 import javax.swing.*;
 import java.awt.*;
 
+/**
+ * Class to represent a plant
+ * @author alexhosseini
+ * @version 1.0
+ */
 public class Plant extends JPanel implements Life  {
-    private Color bg = Color.GREEN;
-    private Point p;
-    //TODO:
+    private Cell location;
 
-    public Plant(Cell location){
-        Point loc = location.getLocation();
-        p = loc;
+
+    public Plant(Cell location) {
+        this.location = location;
+
     }
 
-    public void init(){
-        setBackground(bg);
-    };
-    public void setCell(Cell location){
-        Point loc = location.getLocation();
-        p = loc;
+    public void setCell(Cell location) {
+        this.location = location;
+
      }
 
-    @Override
-    public String toString() {
-        return "Plant{" +
-                "p=" + p +
-                '}';
-    }
-
-    public Color getBg() {
-        return bg;
-    }
 
     @Override
     public void move(Cell oldLocation, Cell location) {
 
     }
 
-    @Override
-    public void incTurns() {
-
-    }
 
 
 }

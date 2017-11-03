@@ -1,5 +1,6 @@
 package ca.bcit.comp2526.a2a;
 
+@SuppressWarnings("ALL")
 public final class RandomGenerator {
     private static final int[] NUMBERS;
 
