@@ -1,60 +1,109 @@
 package ca.bcit.comp2526.a2a;
 
-import java.awt.*;
+import javax.swing.JPanel;
+import java.awt.Color;
 
 /**
- * Herbivore class represents a herbivore
+ * Herbivore class represents a herbivore.
+ * @author alexhosseini
+ * @version 1.0
  */
-public class Herbivore implements Life {
-     int turns = 0;
-     boolean canMove = true;
+public class Herbivore extends JPanel implements Life {
+    private static final Color BG = Color.YELLOW;
+    private int turns;
+
+
+    private boolean canMove = true;
+
 
     private Cell location;
 
-    //TODO
-    public Herbivore(Cell location) {
-        this.location = location;
+    /**
+     * Creates a herbivore in the provided cell.
+     * @param loc to place herbivore
+     */
+    public Herbivore(Cell loc) {
+        this.location = loc;
+    }
+
+    /**
+     * Set the colour of the herbivore.
+     * @return the colour of the herbivore
+     */
+    public Color getColor() {
+        return BG;
+
+    }
+
+    /**
+     * Method to to set herb's location.
+     * @param loc cell to place
+     */
+    public void setCell(Cell loc) {
+        this.location = loc;
     }
 
 
-    public void setCell(Cell location) {
-        this.location = location;
-    }
-
-
+    /**
+     * Moves herbivore from old cell to new cell.
+     * @param oldLocation from cell
+     * @param newLocation to cell
+     */
     public void move(Cell oldLocation, Cell newLocation) {
         this.location = newLocation;
         newLocation.setLife(this);
-
-        //this.turns = 0;
-        oldLocation.getLife();//.setTurns(0);
         oldLocation.removeLife();
         this.canMove = false;
-
 
 
     }
 
     /**
-     * Eat plant in location
-     * @param location
+     * Eat plant in location.
+     *
+     * @param loc of plant
      */
-    public void eat(Cell location) {
-        location.removeLife();
+    public void eat(Cell loc) {
+        loc.removeLife();
         this.turns = 0;
-        this.move(this.location, location);
+        this.move(this.location, loc);
 
     }
 
-    public void incTurns(){
+    /**
+     * Increment the turns of this herbivore.
+     */
+    public void incTurns() {
         this.turns++;
     }
-    public int getTurns(){
+
+    /**
+     * Return the turns taken by the herbivore.
+     * @return the turns taken by the herbivore
+     */
+    public int getTurns() {
         return turns;
     }
-    public void setTurns(int a){
-        turns = a;
+
+    /**
+     * Return true if herb can move; else false.
+     * @return canMove of herb
+     */
+    public boolean isCanMove() {
+        return canMove;
     }
+
+    /**
+     * Set the canMove of the herbivore.
+     * @param b the bool to set
+     */
+    public void setCanMove(Boolean b) {
+        this.canMove = b;
+    }
+
+
+
+
 
 }
 

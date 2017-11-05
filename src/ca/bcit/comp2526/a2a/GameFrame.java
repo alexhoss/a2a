@@ -1,11 +1,12 @@
 package ca.bcit.comp2526.a2a;
 
-import java.awt.*;
-import javax.swing.*;
+import java.awt.GridLayout;
+import javax.swing.JFrame;
 
 
 /**
  * Class to represent a game frame.
+ *
  * @author alexhosseini
  * @version 1.0
  */
@@ -14,6 +15,7 @@ public class GameFrame extends JFrame {
 
     /**
      * Construct the frame which holds the world.
+     *
      * @param w world to hold
      */
     public GameFrame(final World w) {
