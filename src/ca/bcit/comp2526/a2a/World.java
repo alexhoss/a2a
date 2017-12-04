@@ -1,6 +1,6 @@
 package ca.bcit.comp2526.a2a;
 
-import java.util.ArrayList;
+import java.io.Serializable;
 
 /**
  * Class to represent a world.
@@ -8,10 +8,7 @@ import java.util.ArrayList;
  * @author alexhosseini
  * @version 1.0
  */
-public class World {
-    private static final int DEATH = 10;
-    private static final int THREE = 3;
-
+public class World implements Serializable {
     private Cell[][] cells;
     private final int rows;
     private final int col;
@@ -43,100 +40,122 @@ public class World {
     }
 
     /**
+     * Method to kill all Life forms.
+     */
+    public void kill() {
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < col; j++) {
+                if (cells[i][j].getLife() != null) {
+                    cells[i][j].removeLife();
+                    cells[i][j].repaint();
+                }
+            }
+        }
+
+    }
+
+    /**
+     * Method to reset game state.
+     */
+    public void reset() {
+        RandomGenerator.reset();
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < col; j++) {
+                cells[i][j].init();
+
+            }
+        }
+    }
+
+
+    /**
+     * Method to load a saved game state.
+     *
+     * @param loadCells the cells saved
+     */
+    public void loadGame(Cell[][] loadCells) {
+        this.kill();
+        RandomGenerator.reset();
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < col; j++) {
+                if (loadCells[i][j].getLife() != null) {
+                    cells[i][j].setLife(loadCells[i][j].getLife());
+                    cells[i][j].getLife().setLocation(cells[i][j]);
+                }
+                cells[i][j].repaint();
+            }
+        }
+    }
+
+    /**
+     * Method to load a game state using the doubly linked list.
+     * @param loadCells doubley linked list cells
+     */
+    public void loadGameLL(DoublyLinkedList<Cell> loadCells) {
+        this.kill();
+        RandomGenerator.reset();
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < col; j++) {
+                try {
+                    cells[i][j].setLife(loadCells.removeFromFront().getLife());
+                    if (cells[i][j].getLife() != null) {
+                        cells[i][j].getLife().setLocation(cells[i][j]);
+                    }
+                } catch (CouldNotRemoveException e) {
+                    e.printStackTrace();
+                }
+
+                cells[i][j].repaint();
+            }
+
+        }
+    }
+
+
+    /**
      * Advance world state.
      */
     public void takeTurn() {
         for (int i = 0; i < rows; i++) {
             for (int j = 0; j < col; j++) {
+                if (getCellAt(i, j).getLife() != null) {
+                    final Life life = getCellAt(i, j).getLife();
 
-                final Life life = getCellAt(i, j).getLife();
+                    if (life instanceof Animal) {
 
-                if (life instanceof Herbivore) {
-                    if (((Herbivore) life).getTurns() == DEATH) {
-                        getCellAt(i, j).removeLife();
-                        continue;
+                        final Animal animal = (Animal) life;
+                        if (animal.getTurns() == animal.getDeath()) {
+                            getCellAt(i, j).removeLife();
+                            continue;
+                        }
+                        if (!(animal.isCanMove())) {
+                            continue;
+                        }
+                        animal.takeTurn();
+
+
+                    } else if (life instanceof Plant) {
+                        ((Plant) life).takeTurn();
+
+
                     }
-                    if (!(((Herbivore) life).isCanMove())) {
-                        continue;
-                    }
-
-                    turnHerb(i, j, life);
-                } else if (life instanceof Plant) {
-                    turnPlant(i, j);
                 }
             }
         }
         resetAndInc();
 
+
     }
 
     /**
-     * Helper method to advance a plant(seed).
+     * Return cells of the world.
      *
-     * @param i row of cell
-     * @param j col of cell.
+     * @return cells
      */
-    private void turnPlant(int i, int j) {
-        int empty = 0;
-        int plants = 0;
-        ArrayList<Integer> emptyCells = new ArrayList<>();
-        ArrayList<Cell> neighbours = getCellAt(i, j).getAdjacentCells();
-
-        for (Cell c : neighbours) {
-            if (c.getLife() instanceof Plant) {
-                plants++;
-            } else if (c.getLife() == null) {
-                emptyCells.add(neighbours.indexOf(c));
-                empty++;
-            }
-        }
-        if (plants >= 2 && empty >= THREE) {
-            int rand = RandomGenerator.nextNumber(empty - 1);
-            int ind = emptyCells.get(rand);
-            neighbours.get(ind).setPlant();
-
-        }
+    public Cell[][] getCells() {
+        return cells;
     }
 
-    /**
-     * Helper method to advance herbivore.
-     *
-     * @param i    row of cell
-     * @param j    col of cell.
-     * @param life the life form to process (herbivore)
-     */
-    private void turnHerb(int i, int j, Life life) {
-        ArrayList<Cell> neighbours = getCellAt(i, j).getAdjacentCells();
-
-        ArrayList<Integer> emptyCells = new ArrayList<>();
-        ArrayList<Integer> plantCells = new ArrayList<>();
-        int plants = 0;
-        int empty = 0;
-
-        for (Cell c : neighbours) {
-            if (c.getLife() instanceof Plant) {
-                plantCells.add(neighbours.indexOf(c));
-                plants++;
-
-            } else if (c.getLife() == null) {
-                emptyCells.add(neighbours.indexOf(c));
-                empty++;
-
-            }
-        }
-
-        if (plants >= 1) {
-            int rand = RandomGenerator.nextNumber(plants);
-            int plantToEat = plantCells.get(rand);
-            ((Herbivore) life).eat(neighbours.get(plantToEat));
-
-        } else if (empty >= 1) {
-            int rand = RandomGenerator.nextNumber(empty);
-            int emptyToMove = emptyCells.get(rand);
-            life.move(this.getCellAt(i, j), neighbours.get(emptyToMove));
-
-        }
-    }
 
     /**
      * Reset move bool and increment turns of herbivores.
@@ -144,10 +163,13 @@ public class World {
     private void resetAndInc() {
         for (int i = 0; i < rows; i++) {
             for (int j = 0; j < col; j++) {
-                if (cells[i][j].getLife() instanceof Herbivore) {
-                    ((Herbivore) cells[i][j].getLife()).setCanMove(true);
-                    ((Herbivore) cells[i][j].getLife()).incTurns();
+                Life life = cells[i][j].getLife();
+                if (life != null) {
+                    life.incTurns();
+                    life.setCanMove(true);
+                    life.setCanBirth(true);
                 }
+
             }
         }
     }

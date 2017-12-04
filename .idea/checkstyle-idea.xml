@@ -3,15 +3,14 @@
   <component name="CheckStyle-IDEA">
     <option name="configuration">
       <map>
-        <entry key="active-configuration" value="LOCAL_FILE:C:/Users/ceres/Google Drive/Java/COMP 2526 Checkstyle.xml:bcad" />
+        <entry key="active-configuration" value="LOCAL_FILE:C:/Users/ceres/Google Drive/Java/COMP 2526 Checkstyle.xml:chec" />
         <entry key="checkstyle-version" value="8.2" />
         <entry key="location-0" value="BUNDLED:(bundled):Sun Checks" />
         <entry key="location-1" value="BUNDLED:(bundled):Google Checks" />
-        <entry key="location-2" value="LOCAL_FILE:C:/Users/ceres/Google Drive/Java/COMP 2526 Checkstyle.xml:bcad" />
-        <entry key="location-3" value="LOCAL_FILE:/Users/alexhosseini/Google Drive/Java/COMP 2526 Checkstyle.xml:bcit" />
+        <entry key="location-2" value="LOCAL_FILE:C:/Users/ceres/Google Drive/Java/COMP 2526 Checkstyle.xml:chec" />
         <entry key="scan-before-checkin" value="false" />
         <entry key="scanscope" value="JavaOnly" />
-        <entry key="suppress-errors" value="false" />
+        <entry key="suppress-errors" value="true" />
       </map>
     </option>
   </component>

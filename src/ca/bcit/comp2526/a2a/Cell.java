@@ -5,18 +5,22 @@ import javax.swing.JPanel;
 import java.awt.Point;
 import java.awt.Color;
 import java.awt.Graphics;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 
 /**
  * Class to represent a cell on the frame or world.
+ *
  * @author alexhosseini
  * @version 1.0
  */
-public class Cell extends JPanel {
-    private static final int EIGHTY = 80;
-    private static final int FIFTY = 50;
-    private static final int HUNDRED = 100;
+public class Cell extends JPanel implements Serializable {
+    private static final int CARNCHANCE = 40;
+    private static final int HERBCHANCE = 80;
+    private static final int PLANTCHANCE = 50;
+    private static final int RANDBOUND = 100;
+    private static final int OMNCHANCE = 32;
     private static HashMap worldCells = new HashMap<Point, Cell>();
     private Point p;
     private World world;
@@ -24,9 +28,10 @@ public class Cell extends JPanel {
 
     /**
      * Create a new cell with world.
+     *
      * @param world world the cell belongs to
-     * @param row x pos of clel
-     * @param col y post of cell
+     * @param row   x pos of clel
+     * @param col   y post of cell
      */
     public Cell(World world, int row, int col) {
         this.world = world;
@@ -39,21 +44,40 @@ public class Cell extends JPanel {
      */
     public void init() {
 
+
         this.setBorder(BorderFactory.createLineBorder(Color.BLACK));
-        int rand = RandomGenerator.nextNumber(HUNDRED);
+        int rand = RandomGenerator.nextNumber(RANDBOUND);
 
-        if (rand >= EIGHTY) {
+        if (rand >= HERBCHANCE) {
             this.life = new Herbivore(this);
+            initializeLife();
 
 
-        } else if (rand >= FIFTY) {
+        } else if (rand >= PLANTCHANCE) {
             this.life = new Plant(this);
+            initializeLife();
 
+        } else if (rand >= CARNCHANCE) {
+            this.life = new Carnivore(this);
+            initializeLife();
 
+        } else if (rand >= OMNCHANCE) {
+            this.life = new Omnivore(this);
+            initializeLife();
         }
+
         worldCells.put(this.getLocation(), this);
 
 
+    }
+
+    /**
+     * Helper method to initialize a cell life.
+     */
+    private void initializeLife() {
+        life.init();
+        life.setCanMove(true);
+        life.setCanBirth(true);
     }
 
     /**
@@ -78,6 +102,7 @@ public class Cell extends JPanel {
         for (int i = x - 1; i <= x + 1; i++) {
             for (int j = y - 1; j <= y + 1; j++) {
                 Point loc = new Point(i, j);
+
                 if (worldCells.get(loc) == null) {
                     continue;
                 }
@@ -87,13 +112,6 @@ public class Cell extends JPanel {
         }
         return cells;
 
-    }
-
-    /**
-     * Create a new plant in the cell.
-     */
-    public void setPlant() {
-        life = new Plant(this);
     }
 
     /**
@@ -121,7 +139,6 @@ public class Cell extends JPanel {
 
         this.life = null;
 
-
     }
 
     /**
@@ -142,7 +159,17 @@ public class Cell extends JPanel {
      */
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
-            this.colour();
+        this.colour();
 
     }
+
+    /**
+     * Gets the cells in the world.
+     *
+     * @return all th world cells
+     */
+    public static HashMap getWorldCells() {
+        return worldCells;
+    }
+
 }

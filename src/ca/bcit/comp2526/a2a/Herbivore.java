@@ -1,107 +1,112 @@
 package ca.bcit.comp2526.a2a;
 
-import javax.swing.JPanel;
 import java.awt.Color;
+import java.util.ArrayList;
 
 /**
  * Herbivore class represents a herbivore.
+ *
  * @author alexhosseini
  * @version 1.0
  */
-public class Herbivore extends JPanel implements Life {
+public class Herbivore extends Animal implements OmnEdible, CarnEdible {
     private static final Color BG = Color.YELLOW;
-    private int turns;
-
-
-    private boolean canMove = true;
-
-
-    private Cell location;
-
+    private static final int MATES_REQ = 2;
+    private static final int FOOD_REQ = 1;
+    private static final int EMPTY_REQ = 2;
+    private static final int DEATH = 10;
     /**
      * Creates a herbivore in the provided cell.
+     *
      * @param loc to place herbivore
      */
     public Herbivore(Cell loc) {
-        this.location = loc;
-    }
-
-    /**
-     * Set the colour of the herbivore.
-     * @return the colour of the herbivore
-     */
-    public Color getColor() {
-        return BG;
+        super(loc);
 
     }
 
     /**
-     * Method to to set herb's location.
-     * @param loc cell to place
+     * Initialize a herbivore animal.
      */
-    public void setCell(Cell loc) {
-        this.location = loc;
-    }
-
-
-    /**
-     * Moves herbivore from old cell to new cell.
-     * @param oldLocation from cell
-     * @param newLocation to cell
-     */
-    public void move(Cell oldLocation, Cell newLocation) {
-        this.location = newLocation;
-        newLocation.setLife(this);
-        oldLocation.removeLife();
-        this.canMove = false;
-
-
+    public void init() {
+        setMatesReq(MATES_REQ);
+        setEmptyReq(EMPTY_REQ);
+        setFoodReq(FOOD_REQ);
+        setBG(BG);
+        setDeath(DEATH);
     }
 
     /**
-     * Eat plant in location.
-     *
-     * @param loc of plant
+     * Detects if animal can give birth.
+     * @return true if herb birth conditions met
      */
-    public void eat(Cell loc) {
-        loc.removeLife();
-        this.turns = 0;
-        this.move(this.location, loc);
+    public boolean detectBirth() {
+        ArrayList<Cell> neighbors = getNeighbors();
+
+        int food = 0;
+        int herbs = 0;
+        int empty = 0;
+        for (Cell c : neighbors) {
+            if (c.getLife() instanceof HerbEdible) {
+                food++;
+            } else if (c.getLife() instanceof Herbivore) {
+                herbs++;
+            } else if (c.getLife() == null) {
+                empty++;
+            }
+        }
+        return canBirth(herbs, food, empty);
 
     }
 
     /**
-     * Increment the turns of this herbivore.
+     * Detects if food is nearby herb.
+     * @return true if herb food found
      */
-    public void incTurns() {
-        this.turns++;
+    public boolean detectFood() {
+        ArrayList<Cell> neighbors = getNeighbors();
+        int plants = 0;
+        for (Cell c : neighbors) {
+            if (c.getLife() instanceof HerbEdible) {
+                plants++;
+            }
+        }
+        return plants >= 1;
     }
 
     /**
-     * Return the turns taken by the herbivore.
-     * @return the turns taken by the herbivore
+     * Chooses a random cell with food for herb.
+     * @return a cell with food
      */
-    public int getTurns() {
-        return turns;
+    public Cell getFood() {
+        ArrayList<Cell> neighbors = getNeighbors();
+        ArrayList<Cell> plantCells = new ArrayList<>();
+
+        int plants = 0;
+        for (Cell c : neighbors) {
+            if (c.getLife() instanceof HerbEdible) {
+                plantCells.add(c);
+                plants++;
+            }
+        }
+        return plantCells.get(RandomGenerator.nextNumber(plants));
     }
+
+
+
 
     /**
-     * Return true if herb can move; else false.
-     * @return canMove of herb
+     * Gives birth to new carnivore.
+     * @param newborn the cell to place the newborn in
      */
-    public boolean isCanMove() {
-        return canMove;
+    public void giveBirth(Cell newborn) {
+
+        newborn.setLife(new Herbivore(newborn));
+        newborn.getLife().init();
+        newborn.getLife().setCanBirth(false);
+        newborn.getLife().setCanMove(false);
+
     }
-
-    /**
-     * Set the canMove of the herbivore.
-     * @param b the bool to set
-     */
-    public void setCanMove(Boolean b) {
-        this.canMove = b;
-    }
-
-
 
 
 

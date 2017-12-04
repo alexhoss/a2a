@@ -3,7 +3,6 @@ package ca.bcit.comp2526.a2a;
 import java.awt.GridLayout;
 import javax.swing.JFrame;
 
-
 /**
  * Class to represent a game frame.
  *
@@ -12,6 +11,7 @@ import javax.swing.JFrame;
  */
 public class GameFrame extends JFrame {
     private final World world;
+
 
     /**
      * Construct the frame which holds the world.
@@ -37,7 +37,9 @@ public class GameFrame extends JFrame {
         }
 
 
-        addMouseListener(new TurnListener(this));
+
+
+        //addMouseListener(new TurnListener(this));
     }
 
     /**

@@ -1,9 +1,25 @@
 package ca.bcit.comp2526.a2a;
 
 import java.awt.Dimension;
+import java.awt.Frame;
+import java.awt.GridLayout;
 import java.awt.Point;
 import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import javax.swing.JButton;
 import javax.swing.JFrame;
+import javax.swing.JSlider;
+import javax.swing.Timer;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 /**
  * Drives the program.
@@ -15,7 +31,16 @@ public final class Main {
     private static final Toolkit TOOLKIT;
     private static final float EIGHTY = 0.80f;
     private static final float HUNDRED = 100.0f;
-    private static final int TWENTYFIVE = 25;
+    private static final int GAMEBOUNDS = 25;
+    private static final int WIDTH = 700;
+    private static final int HEIGHT = 300;
+    private static final int MIN = 100;
+    private static final int MAX = 1000;
+    private static final int VALUE = 500;
+    private static final int SPACING = 200;
+    private static File saves = new File("saves.txt");
+    private static DoublyLinkedList<Cell> saveState = new DoublyLinkedList<>();
+
 
     static {
         TOOLKIT = Toolkit.getDefaultToolkit();
@@ -28,22 +53,209 @@ public final class Main {
     }
 
     /**
-     * Creates the game world and frame and initializes it.
-     * @param argv arg
+     * Creates the frame and start the game up.
+     *
+     * @param argv args
+     * @throws Exception thrown if runtime exceptions caught
      */
-    public static void main(final String[] argv) {
+    public static void main(final String[] argv) throws Exception {
         final GameFrame frame;
         final World world;
+        Frame f = new JFrame();
 
         RandomGenerator.reset();
-        world = new World(TWENTYFIVE, TWENTYFIVE);
+        world = new World(GAMEBOUNDS, GAMEBOUNDS);
         world.init();
         frame = new GameFrame(world);
         position(frame);
+
+        JSlider slider = new JSlider(JSlider.HORIZONTAL, MIN, MAX, VALUE);
+
+        Timer startTime = new Timer(slider.getValue(), new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                frame.takeTurn();
+            }
+        });
+        slider.addChangeListener(new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                JSlider source = (JSlider) e.getSource();
+                startTime.setDelay(source.getValue());
+            }
+        });
+        JButton saveButton = new JButton("Save");
+        saveButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                saveGame(world);
+
+
+            }
+        });
+
+        JButton loadButton = new JButton("Load");
+        loadButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+
+                loadGame(world);
+            }
+        });
+
+
+        JButton startButton = new JButton("start");
+        startButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                startTime.start();
+            }
+        });
+
+        JButton stopButton = new JButton("Stop");
+        stopButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                startTime.stop();
+            }
+        });
+
+        JButton resetButton = new JButton("Reset");
+        resetButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                world.kill();
+                world.reset();
+            }
+        });
+        setFrame(f, slider, saveButton, loadButton,
+                startButton, stopButton, resetButton);
         frame.init();
+        f.setSize(WIDTH, HEIGHT);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setVisible(true);
+        f.setVisible(true);
+
     }
+
+    /**
+     * Add buttons and other options.
+     *
+     * @param f           frame to set
+     * @param slider      slide to add
+     * @param saveButton  slidebutton to add
+     * @param loadButton  load button to add
+     * @param startButton start button to add
+     * @param stopButton  stop button
+     * @param resetButton reset button
+     */
+    private static void setFrame(Frame f, JSlider slider,
+                                 JButton saveButton, JButton loadButton,
+                                 JButton startButton,
+                                 JButton stopButton, JButton resetButton) {
+        f.setLayout(new GridLayout());
+        slider.setMajorTickSpacing(SPACING);
+        slider.setPaintTicks(true);
+        slider.setPaintLabels(true);
+        f.add(slider);
+        f.add(startButton);
+        f.add(stopButton);
+        f.add(resetButton);
+        f.add(saveButton);
+        f.add(loadButton);
+
+
+    }
+
+
+    /**
+     * Helper method to load a game.
+     *
+     * @param world world to load in
+     */
+    private static void loadGame(World world) {
+        FileInputStream fis = null;
+        try {
+            fis = new FileInputStream(saves);
+        } catch (FileNotFoundException e1) {
+            e1.printStackTrace();
+        }
+        ObjectInputStream ois = null;
+        try {
+            ois = new ObjectInputStream(fis);
+        } catch (IOException e1) {
+            e1.printStackTrace();
+        }
+        try {
+            world.loadGameLL((DoublyLinkedList<Cell>) ois.readObject());
+            System.out.println("gamed loaded");
+        } catch (IOException e1) {
+            e1.printStackTrace();
+        } catch (ClassNotFoundException e1) {
+            e1.printStackTrace();
+        }
+        try {
+            ois.close();
+        } catch (IOException e1) {
+            e1.printStackTrace();
+        }
+        try {
+            fis.close();
+        } catch (IOException e1) {
+            e1.printStackTrace();
+        }
+    }
+
+    /**
+     * Helper method to save a game state.
+     *
+     * @param world world to save
+     */
+    private static void saveGame(World world) {
+        saveState = null;
+        saveState = new DoublyLinkedList<Cell>();
+
+        for (int i = 0; i < world.getRowCount(); i++) {
+            for (int j = 0; j < world.getColumnCount(); j++) {
+                try {
+                    saveState.addToEnd(world.getCellAt(i, j));
+                } catch (CouldNotAddException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        FileOutputStream fos = null;
+
+        try {
+            fos = new FileOutputStream(saves);
+        } catch (FileNotFoundException e1) {
+            e1.printStackTrace();
+        }
+        ObjectOutputStream oos = null;
+        try {
+            oos = new ObjectOutputStream(fos);
+        } catch (IOException e1) {
+            e1.printStackTrace();
+        }
+        try {
+            oos.writeObject(saveState);
+            System.out.println("game saved");
+        } catch (IOException e1) {
+            e1.printStackTrace();
+        }
+        try {
+            oos.close();
+        } catch (IOException e1) {
+            e1.printStackTrace();
+        }
+        try {
+            fos.close();
+        } catch (IOException e1) {
+            e1.printStackTrace();
+        }
+    }
+
 
     /**
      * Sets frames position and size.
