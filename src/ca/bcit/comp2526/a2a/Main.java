@@ -215,7 +215,6 @@ public final class Main {
     private static void saveGame(World world) {
         saveState = null;
         saveState = new DoublyLinkedList<Cell>();
-
         for (int i = 0; i < world.getRowCount(); i++) {
             for (int j = 0; j < world.getColumnCount(); j++) {
                 try {

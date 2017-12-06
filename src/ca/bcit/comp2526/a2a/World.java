@@ -13,6 +13,7 @@ public class World implements Serializable {
     private final int rows;
     private final int col;
 
+
     /**
      * Create the world with rows and col.
      *
